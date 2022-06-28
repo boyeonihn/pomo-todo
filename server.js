@@ -30,8 +30,7 @@ app.get('/',(request, response)=>{
 })
 
 app.post('/addTodo', (request, response) => {
-    db.collection('todos').insertOne({todo: request.body.todo,
-    pomoSessions: request.body.pomoSessions, pomosCompleted: 0})
+    db.collection('todos').insertOne({todo: request.body.todo, pomosCompleted: 0})
     .then(result => {
         console.log('to-do task added')
         response.redirect('/')
@@ -40,7 +39,7 @@ app.post('/addTodo', (request, response) => {
 })
 
 app.put('/addCompletedPomo', (request, response) => {
-    db.collection('todos').updateOne({todo: request.body.todoS, pomoSessions: request.body.pomoSessionsS, pomosCompleted: request.body.pomosS},{
+    db.collection('todos').updateOne({todo: request.body.todoS, pomosCompleted: request.body.pomosS},{
         $set: {
             pomosCompleted:request.body.pomosS + 1
           }
@@ -57,7 +56,8 @@ app.put('/addCompletedPomo', (request, response) => {
 })
 
 app.delete('/deleteTodo', (request, response) => {
-    db.collection('todos').deleteOne({todo: request.body.todoS})
+    console.log(request)
+    db.collection('todos').deleteOne({todo: request.body.taskNameS})
     .then(result => {
         console.log('Task deleted')
         response.json('Task deleted')
