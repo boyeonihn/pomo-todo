@@ -7,7 +7,7 @@ require('dotenv').config()
 
 let db,
     dbConnectionStr = process.env.DB_STRING,
-    dbName = 'rap'
+    dbName = 'pomo-todo'
 
 MongoClient.connect(dbConnectionStr, { useUnifiedTopology: true })
     .then(client => {
@@ -22,45 +22,45 @@ app.use(express.json())
 
 
 app.get('/',(request, response)=>{
-    db.collection('rappers').find().sort({likes: -1}).toArray()
+    db.collection('todos').find().sort({pomosCompleted: -1}).toArray()
     .then(data => {
         response.render('index.ejs', { info: data })
     })
     .catch(error => console.error(error))
 })
 
-app.post('/addRapper', (request, response) => {
-    db.collection('rappers').insertOne({stageName: request.body.stageName,
-    birthName: request.body.birthName, likes: 0})
+app.post('/addTodo', (request, response) => {
+    db.collection('todos').insertOne({todo: request.body.todo,
+    pomoSessions: request.body.pomoSessions, pomosCompleted: 0})
     .then(result => {
-        console.log('Rapper Added')
+        console.log('to-do task added')
         response.redirect('/')
     })
     .catch(error => console.error(error))
 })
 
-app.put('/addOneLike', (request, response) => {
-    db.collection('rappers').updateOne({stageName: request.body.stageNameS, birthName: request.body.birthNameS,likes: request.body.likesS},{
+app.put('/addCompletedPomo', (request, response) => {
+    db.collection('todos').updateOne({todo: request.body.todoS, pomoSessions: request.body.pomoSessionsS, pomosCompleted: request.body.pomosS},{
         $set: {
-            likes:request.body.likesS + 1
+            pomosCompleted:request.body.pomosS + 1
           }
     },{
         sort: {_id: -1},
         upsert: true
     })
     .then(result => {
-        console.log('Added One Like')
-        response.json('Like Added')
+        console.log('Added One Completed Pomodoro Session')
+        response.json('Pomodoro Session Completed')
     })
     .catch(error => console.error(error))
 
 })
 
-app.delete('/deleteRapper', (request, response) => {
-    db.collection('rappers').deleteOne({stageName: request.body.stageNameS})
+app.delete('/deleteTodo', (request, response) => {
+    db.collection('todos').deleteOne({todo: request.body.todoS})
     .then(result => {
-        console.log('Rapper Deleted')
-        response.json('Rapper Deleted')
+        console.log('Task deleted')
+        response.json('Task deleted')
     })
     .catch(error => console.error(error))
 
