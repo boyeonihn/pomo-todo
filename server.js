@@ -2,7 +2,8 @@ const express = require('express')
 const app = express()
 const MongoClient = require('mongodb').MongoClient
 const PORT = 2121
-require('dotenv').config()
+const dotenv = require('dotenv')
+dotenv.config()
 
 
 let db,
@@ -22,7 +23,7 @@ app.use(express.json())
 
 
 app.get('/',(request, response)=>{
-    db.collection('todos').find().sort({pomosCompleted: -1}).toArray()
+    db.collection('todos').find().toArray()
     .then(data => {
         response.render('index.ejs', { info: data })
     })
@@ -30,7 +31,7 @@ app.get('/',(request, response)=>{
 })
 
 app.post('/addTodo', (request, response) => {
-    db.collection('todos').insertOne({todo: request.body.todo, pomosCompleted: 0})
+    db.collection('todos').insertOne({todo: request.body.todo, pomosCompleted: 0, pomodorosGraphic: ''})
     .then(result => {
         console.log('to-do task added')
         response.redirect('/')
@@ -39,9 +40,10 @@ app.post('/addTodo', (request, response) => {
 })
 
 app.put('/addCompletedPomo', (request, response) => {
-    db.collection('todos').updateOne({todo: request.body.todoS, pomosCompleted: request.body.pomosS},{
+    db.collection('todos').updateOne({todo: request.body.taskNameS, pomosCompleted: request.body.pomoNumS},{
         $set: {
-            pomosCompleted:request.body.pomosS + 1
+            pomosCompleted: request.body.pomoNumS + 1,
+            pomodorosGraphic: '◐'.repeat(request.body.pomoNumS + 1)
           }
     },{
         sort: {_id: -1},
@@ -55,8 +57,25 @@ app.put('/addCompletedPomo', (request, response) => {
 
 })
 
+app.put('/subOnePomo', (request, response) => {
+    db.collection('todos').updateOne({todo: request.body.taskNameS, pomodorosGraphic: request.body.pomoGraphicS, pomosCompleted: request.body.pomoNumS},{
+        $set: {
+            pomosCompleted: request.body.pomoNumS - 1,
+            pomodorosGraphic: '◐'.repeat(request.body.pomoNumS - 1)
+          }
+    },{
+        sort: {_id: -1},
+        upsert: true
+    })
+    .then(result => {
+        console.log('Deleted One Completed Pomodoro Session')
+        response.json('Pomodoro Session Taken away')
+    })
+    .catch(error => console.error(error))
+
+})
+
 app.delete('/deleteTodo', (request, response) => {
-    console.log(request)
     db.collection('todos').deleteOne({todo: request.body.taskNameS})
     .then(result => {
         console.log('Task deleted')
